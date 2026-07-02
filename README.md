@@ -1,5 +1,7 @@
 # Nexora CashFlow AI
 
+**Live Demo:** [https://nexora-cashflow-ai.vercel.app/](https://nexora-cashflow-ai.vercel.app/)
+
 A robust, full-stack financial dashboard tailored to help modern businesses track, forecast, and visualize their cash flow efficiently. Built from the ground up for speed, reliability, and powerful predictive analytics.
 
 ## Features
