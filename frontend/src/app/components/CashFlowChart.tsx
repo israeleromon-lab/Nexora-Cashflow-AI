@@ -47,5 +47,6 @@ export default function CashFlowChart({ data, currency = '₦' }: Props) {
         />
       </BarChart>
     </ResponsiveContainer>
+    </div>
   );
 }
