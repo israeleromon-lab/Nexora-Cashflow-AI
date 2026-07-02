@@ -8,7 +8,12 @@ export type ChartData = {
   expenses: number;
 }
 
-export default function RevenueExpenseChart({ data }: { data: ChartData[] }) {
+type Props = {
+  data: ChartData[];
+  currency?: string;
+}
+
+export default function RevenueExpenseChart({ data, currency = '₦' }: Props) {
   if (!data || data.length === 0) {
     return <div className="text-slate-500 h-full flex items-center justify-center">No chart data available.</div>;
   }
@@ -30,7 +35,7 @@ export default function RevenueExpenseChart({ data }: { data: ChartData[] }) {
           fontSize={12} 
           tickLine={false} 
           axisLine={false} 
-          tickFormatter={(value) => `₦${value >= 1000 ? (value / 1000) + 'k' : value}`}
+          tickFormatter={(value) => `${currency}${value >= 1000 ? (value / 1000) + 'k' : value}`}
         />
         <Tooltip 
           cursor={{ fill: '#ffffff05' }}

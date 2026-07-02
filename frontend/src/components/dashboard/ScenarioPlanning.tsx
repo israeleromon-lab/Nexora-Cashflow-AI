@@ -9,7 +9,12 @@ export type Scenario = {
   type: 'base' | 'upside' | 'downside';
 }
 
-export default function ScenarioPlanning({ scenarios }: { scenarios: Scenario[] }) {
+type Props = {
+  scenarios: Scenario[];
+  currency?: string;
+}
+
+export default function ScenarioPlanning({ scenarios, currency = '₦' }: Props) {
   if (!scenarios || scenarios.length === 0) {
     return <div className="text-slate-500 py-4 text-center">No scenarios generated yet.</div>;
   }
@@ -29,12 +34,12 @@ export default function ScenarioPlanning({ scenarios }: { scenarios: Scenario[] 
               </div>
               <div>
                 <p className="text-sm font-medium text-white">{scenario.name}</p>
-                <p className="text-xs text-slate-400">Net: ₦{netCashFlow.toLocaleString()}</p>
+                <p className="text-xs text-slate-400">Net: {currency}{netCashFlow.toLocaleString()}</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-sm font-medium text-amber-400">Rev: ₦{scenario.projectedRevenue.toLocaleString()}</p>
-              <p className="text-xs text-rose-400">Exp: ₦{scenario.projectedExpense.toLocaleString()}</p>
+              <p className="text-sm font-medium text-amber-400">Rev: {currency}{scenario.projectedRevenue.toLocaleString()}</p>
+              <p className="text-xs text-rose-400">Exp: {currency}{scenario.projectedExpense.toLocaleString()}</p>
             </div>
           </div>
         );

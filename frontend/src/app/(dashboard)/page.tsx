@@ -13,6 +13,8 @@ export default async function DashboardPage() {
   
   // Get authenticated user
   const { data: { user } } = await supabase.auth.getUser()
+  const currency = user?.user_metadata?.currency || '₦'
+
   
   // Fetch transactions for the user
   const { data: transactions } = await supabase
@@ -36,6 +38,37 @@ export default async function DashboardPage() {
   const totalExpenses = isDemo ? 450000 : transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + Number(t.amount), 0)
   const netCashFlow = totalIncome - totalExpenses
 
+  let realChartData: ChartData[] = [];
+  let realExpenseData: ExpenseCategoryData[] = [];
+
+  if (transactions && transactions.length > 0) {
+    const monthMap: Record<string, { revenue: number, expenses: number }> = {};
+    const catMap: Record<string, number> = {};
+
+    transactions.forEach(t => {
+      const date = new Date(t.date);
+      const monthStr = date.toLocaleDateString('en-US', { month: 'short' });
+      if (!monthMap[monthStr]) monthMap[monthStr] = { revenue: 0, expenses: 0 };
+      
+      const amt = Number(t.amount);
+      if (t.type === 'revenue') {
+        monthMap[monthStr].revenue += amt;
+      } else {
+        monthMap[monthStr].expenses += amt;
+        catMap[t.category] = (catMap[t.category] || 0) + amt;
+      }
+    });
+
+    realChartData = Object.entries(monthMap).map(([name, data]) => ({ name, ...data }));
+    
+    const colors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'];
+    realExpenseData = Object.entries(catMap)
+      .sort((a, b) => b[1] - a[1]) // Sort largest expenses first
+      .map(([name, value], i) => ({
+        name, value, color: colors[i % colors.length]
+      }));
+  }
+
   const chartData: ChartData[] = isDemo ? [
     { name: 'Jul', revenue: 800000, expenses: 500000 },
     { name: 'Aug', revenue: 1200000, expenses: 600000 },
@@ -43,14 +76,14 @@ export default async function DashboardPage() {
     { name: 'Oct', revenue: 1500000, expenses: 800000 },
     { name: 'Nov', revenue: 2100000, expenses: 1100000 },
     { name: 'Dec', revenue: 2400000, expenses: 1200000 },
-  ] : [] // In a real app, we'd group 'transactions' by month here
+  ] : realChartData;
 
   const expenseCategories: ExpenseCategoryData[] = isDemo ? [
     { name: 'SaaS Tools', value: 120000, color: '#3b82f6' },
     { name: 'Payroll', value: 250000, color: '#10b981' },
     { name: 'Marketing', value: 50000, color: '#f59e0b' },
     { name: 'Others', value: 30000, color: '#8b5cf6' },
-  ] : [] // We'd group 'transactions' where type = 'expense' by category
+  ] : realExpenseData;
 
   const displayScenarios: Scenario[] = isDemo ? [
     { name: 'Base Case', projectedRevenue: 2400000, projectedExpense: 1200000, type: 'base' },
@@ -80,7 +113,7 @@ export default async function DashboardPage() {
             <DollarSign className="h-4 w-4 text-emerald-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">₦{netCashFlow.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-white">{currency}{netCashFlow.toLocaleString()}</div>
             <p className="text-xs text-emerald-400 mt-1 flex items-center">
               <ArrowUpRight className="w-3 h-3 mr-1" /> +12.5% from last quarter
             </p>
@@ -94,7 +127,7 @@ export default async function DashboardPage() {
             <ArrowUpRight className="h-4 w-4 text-amber-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">₦{totalIncome.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-white">{currency}{totalIncome.toLocaleString()}</div>
             <p className="text-xs text-amber-400 mt-1 flex items-center">
               <ArrowUpRight className="w-3 h-3 mr-1" /> +8.2% vs target
             </p>
@@ -108,7 +141,7 @@ export default async function DashboardPage() {
             <ArrowDownRight className="h-4 w-4 text-rose-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">₦{totalExpenses.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-white">{currency}{totalExpenses.toLocaleString()}</div>
             <p className="text-xs text-rose-400 mt-1 flex items-center">
               <ArrowDownRight className="w-3 h-3 mr-1" /> -3.1% vs budget
             </p>
@@ -135,7 +168,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent className="flex-1">
             <div className="h-[300px] w-full flex items-center justify-center">
-              <RevenueExpenseChart data={chartData} />
+              <RevenueExpenseChart data={chartData} currency={currency} />
             </div>
           </CardContent>
         </Card>
@@ -146,7 +179,7 @@ export default async function DashboardPage() {
               <CardTitle className="text-white">Scenario Planning</CardTitle>
             </CardHeader>
             <CardContent>
-              <ScenarioPlanning scenarios={displayScenarios} />
+              <ScenarioPlanning scenarios={displayScenarios} currency={currency} />
             </CardContent>
           </Card>
           
@@ -156,7 +189,7 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent>
                <div className="h-[200px] w-full flex items-center justify-center">
-                <ExpenseBreakdown data={expenseCategories} />
+                <ExpenseBreakdown data={expenseCategories} currency={currency} />
               </div>
             </CardContent>
           </Card>

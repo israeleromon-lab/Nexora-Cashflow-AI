@@ -21,6 +21,7 @@ export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
   const [isAdding, setIsAdding] = useState(false)
+  const [currency, setCurrency] = useState("₦")
   const supabase = createClient()
   const router = useRouter()
 
@@ -39,6 +40,8 @@ export default function TransactionsPage() {
   const fetchTransactions = async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return;
+    
+    setCurrency(user.user_metadata?.currency || "₦")
 
     const { data } = await supabase
       .from('transactions')
@@ -113,7 +116,7 @@ export default function TransactionsPage() {
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300">Amount (₦)</label>
+                <label className="text-sm font-medium text-slate-300">Amount ({currency})</label>
                 <Input type="number" required value={amount} onChange={(e) => setAmount(e.target.value)} className="bg-white/5 border-white/10 text-white" />
               </div>
               <div className="space-y-2">
@@ -167,7 +170,7 @@ export default function TransactionsPage() {
                     <td className="px-6 py-4 text-right">
                       <div className={`flex items-center justify-end font-bold ${t.type === 'revenue' ? 'text-emerald-400' : 'text-rose-400'}`}>
                         {t.type === 'revenue' ? <ArrowUpRight className="w-3 h-3 mr-1" /> : <ArrowDownRight className="w-3 h-3 mr-1" />}
-                        ₦{t.amount.toLocaleString()}
+                        {currency}{t.amount.toLocaleString()}
                       </div>
                     </td>
                   </tr>

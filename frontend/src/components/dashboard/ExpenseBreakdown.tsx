@@ -10,7 +10,12 @@ export type ExpenseCategoryData = {
 
 const COLORS = ['#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ef4444'];
 
-export default function ExpenseBreakdown({ data }: { data: ExpenseCategoryData[] }) {
+type Props = {
+  data: ExpenseCategoryData[]
+  currency?: string
+}
+
+export default function ExpenseBreakdown({ data, currency = '₦' }: Props) {
   if (!data || data.length === 0) {
     return <div className="text-slate-500 h-full flex items-center justify-center">No expense data available.</div>;
   }
@@ -39,9 +44,9 @@ export default function ExpenseBreakdown({ data }: { data: ExpenseCategoryData[]
           ))}
         </Pie>
         <Tooltip 
-          contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px', color: '#fff' }}
-          itemStyle={{ color: '#fff' }}
-          formatter={(value: number) => `₦${value.toLocaleString()}`}
+          formatter={(value: number) => `${currency}${value.toLocaleString()}`}
+          contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
+          itemStyle={{ color: '#f8fafc' }}
         />
         <Legend 
           layout="vertical" 

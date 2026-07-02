@@ -1,11 +1,6 @@
 import { NextResponse } from 'next/server';
-import Groq from 'groq-sdk';
 import { SYSTEM_PROMPTS } from '@/lib/ai/prompts';
 import { createClient } from '@/utils/supabase/server';
-
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
 
 export async function POST(req: Request) {
   try {
@@ -40,21 +35,37 @@ export async function POST(req: Request) {
     // Replace context placeholder in prompt
     const systemMessage = SYSTEM_PROMPTS.CHAT_ADVISOR.replace('{financialData}', financialContext);
 
-    const chatCompletion = await groq.chat.completions.create({
-      messages: [
-        { role: 'system', content: systemMessage },
-        { role: 'user', content: message }
-      ],
-      model: 'llama3-8b-8192',
-      temperature: 0.7,
-      max_tokens: 1024,
+    // Call OpenRouter API
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "http://localhost:3000", // Required by OpenRouter
+        "X-Title": "Nexora CashFlow AI", // Required by OpenRouter
+      },
+      body: JSON.stringify({
+        model: "meta-llama/llama-3-8b-instruct", // Fast Chatbot model
+        messages: [
+          { role: 'system', content: systemMessage },
+          { role: 'user', content: message }
+        ],
+        temperature: 0.7,
+        max_tokens: 1024,
+      })
     });
 
-    const responseContent = chatCompletion.choices[0]?.message?.content || "I'm sorry, I couldn't generate a response.";
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`OpenRouter API error: ${response.status} ${errorText}`);
+    }
+
+    const data = await response.json();
+    const responseContent = data.choices?.[0]?.message?.content || "I'm sorry, I couldn't generate a response.";
 
     return NextResponse.json({ response: responseContent });
   } catch (error: any) {
-    console.error('Error in Groq chat route:', error);
+    console.error('Error in OpenRouter chat route:', error);
     return NextResponse.json({ error: error.message || 'Failed to process request' }, { status: 500 });
   }
 }

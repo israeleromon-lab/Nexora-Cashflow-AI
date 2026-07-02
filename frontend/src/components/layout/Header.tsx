@@ -1,11 +1,35 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Search, Bell, HelpCircle, Menu, X } from "lucide-react"
 import Link from "next/link"
+import { createClient } from "@/utils/supabase/client"
 
 export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [userName, setUserName] = useState("Loading...")
+  const [companyName, setCompanyName] = useState("")
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: profile } = await supabase.from('profiles').select('first_name, last_name, company_name').eq('id', user.id).single()
+        if (profile && profile.first_name) {
+          setUserName(`${profile.first_name} ${profile.last_name || ''}`.trim())
+          setCompanyName(profile.company_name || "Personal Account")
+        } else if (user.user_metadata?.first_name) {
+          setUserName(`${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`.trim())
+          setCompanyName("Personal Account")
+        } else {
+          setUserName("User")
+          setCompanyName("Personal Account")
+        }
+      }
+    }
+    fetchUser()
+  }, [])
 
   return (
     <div className="relative">
@@ -31,20 +55,16 @@ export const Header = () => {
 
           {/* Right: Actions & Profile */}
           <div className="flex items-center gap-x-2 md:gap-x-4 ml-auto">
-            <button className="text-slate-400 hover:text-white transition p-2 rounded-full hover:bg-white/5 hidden sm:block">
+            <Link href="/ai-advisor" title="Ask AI Advisor for Help" className="text-slate-400 hover:text-amber-400 transition p-2 rounded-full hover:bg-amber-400/10 hidden sm:block">
               <HelpCircle className="h-5 w-5" />
-            </button>
-            <button className="text-slate-400 hover:text-white transition p-2 rounded-full hover:bg-white/5 relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full"></span>
-            </button>
+            </Link>
             
             <div className="h-8 w-px bg-white/10 mx-1 md:mx-2"></div>
 
             <div className="flex items-center gap-x-3 cursor-pointer hover:opacity-80 transition">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-medium text-white leading-none">Alex Thompson</p>
-                <p className="text-xs text-slate-400 mt-1">Acme Corp</p>
+                <p className="text-sm font-medium text-white leading-none">{userName}</p>
+                <p className="text-xs text-slate-400 mt-1">{companyName}</p>
               </div>
               <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-500 border-2 border-white/20 shadow-lg shadow-indigo-500/20"></div>
             </div>

@@ -1,10 +1,6 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenAI } from '@google/genai';
 import { SYSTEM_PROMPTS } from '@/lib/ai/prompts';
 import { createClient } from '@/utils/supabase/server';
-
-// Initialize the new standard GenAI SDK
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export async function POST(req: Request) {
   try {
@@ -14,6 +10,8 @@ export async function POST(req: Request) {
     let financialContext = "User has no data.";
 
     if (user) {
+      const currency = user.user_metadata?.currency || '₦';
+
       // Fetch all transactions to give a comprehensive report
       const { data: transactions } = await supabase
         .from('transactions')
@@ -27,40 +25,59 @@ export async function POST(req: Request) {
         const totalExpense = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + Number(t.amount), 0);
         
         financialContext = `
-        Total Revenue: ₦${totalIncome}
-        Total Expenses: ₦${totalExpense}
-        Net Cash Flow: ₦${totalIncome - totalExpense}
+        Total Revenue: ${currency}${totalIncome}
+        Total Expenses: ${currency}${totalExpense}
+        Net Cash Flow: ${currency}${totalIncome - totalExpense}
         Transaction Count: ${transactions.length}
         Recent Transactions JSON: ${JSON.stringify(transactions.slice(0, 50))}
+        Please provide advice formatted in ${currency}.
         `;
       } else {
         // Fallback demo data if user has no transactions so the AI can still generate a nice report
         financialContext = `
         [DEMO DATA - USER HAS NO REAL TRANSACTIONS YET]
-        Total Revenue: ₦2,450,000
-        Total Expenses: ₦1,200,000
-        Net Cash Flow: ₦1,250,000
-        Major Expenses: Payroll (₦250k), SaaS (₦120k), Marketing (₦50k)
+        Total Revenue: ${currency}2,450,000
+        Total Expenses: ${currency}1,200,000
+        Net Cash Flow: ${currency}1,250,000
+        Major Expenses: Payroll (${currency}250k), SaaS (${currency}120k), Marketing (${currency}50k)
+        Please provide advice formatted in ${currency}.
         `;
       }
     }
 
     const systemInstruction = SYSTEM_PROMPTS.STRATEGIC_REPORT.replace('{financialData}', financialContext);
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: "Please generate my Strategic Financial Report now.",
-      config: {
-        systemInstruction: systemInstruction,
+    // Call OpenRouter API
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "http://localhost:3000",
+        "X-Title": "Nexora CashFlow AI",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash", // Powerful analytical model
+        messages: [
+          { role: 'system', content: systemInstruction },
+          { role: 'user', content: "Please generate my Strategic Financial Report now." }
+        ],
         temperature: 0.4, // Lower temperature for more structured, analytical output
-      }
+        max_tokens: 2000, // Explicitly set to avoid large credit reservation holds
+      })
     });
 
-    const adviceContent = response.text || "Failed to generate report.";
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`OpenRouter API error: ${response.status} ${errorText}`);
+    }
+
+    const data = await response.json();
+    const adviceContent = data.choices?.[0]?.message?.content || "Failed to generate report.";
 
     return NextResponse.json({ advice: adviceContent });
   } catch (error: any) {
-    console.error('Error in Gemini advice route:', error);
+    console.error('Error in OpenRouter advice route:', error);
     return NextResponse.json({ error: error.message || 'Failed to process request' }, { status: 500 });
   }
 }
