@@ -55,7 +55,7 @@ export const Header = () => {
 
           {/* Right: Actions & Profile */}
           <div className="flex items-center gap-x-2 md:gap-x-4 ml-auto">
-            <Link href="/ai-advisor" title="Ask AI Advisor for Help" className="text-slate-400 hover:text-amber-400 transition p-2 rounded-full hover:bg-amber-400/10 hidden sm:block">
+            <Link href="/guide" title="Quick Start Guide" className="text-slate-400 hover:text-amber-400 transition p-2 rounded-full hover:bg-amber-400/10 hidden sm:block">
               <HelpCircle className="h-5 w-5" />
             </Link>
             
