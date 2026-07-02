@@ -10,9 +10,7 @@ export async function POST(req: Request) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    // Fetch all transactions to give a comprehensive report
-    const { data: transactions } = await supabase
+    // Variables for financial context
     let financialContext = "User has no data.";
     let currency = '₦';
 
