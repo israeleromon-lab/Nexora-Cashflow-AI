@@ -20,7 +20,7 @@ export default function CashFlowChart({ data, currency = '₦' }: Props) {
   return (
     <div className="h-[300px] w-full mt-4">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data}>
+        <BarChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" />
           <XAxis 
             dataKey="name" 
@@ -32,8 +32,9 @@ export default function CashFlowChart({ data, currency = '₦' }: Props) {
           <YAxis 
             axisLine={false} 
             tickLine={false} 
+            width={60}
             tick={{ fill: '#94a3b8' }} 
-            tickFormatter={(value) => `${currency}${value / 1000}k`}
+            tickFormatter={(value) => `${currency}${Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(value)}`}
           />
         <Tooltip 
           cursor={{ fill: '#ffffff10' }}

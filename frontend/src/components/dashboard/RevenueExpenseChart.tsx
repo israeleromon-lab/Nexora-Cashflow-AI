@@ -20,7 +20,7 @@ export default function RevenueExpenseChart({ data, currency = '₦' }: Props) {
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+      <BarChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
         <XAxis 
           dataKey="name" 
@@ -35,7 +35,8 @@ export default function RevenueExpenseChart({ data, currency = '₦' }: Props) {
           fontSize={12} 
           tickLine={false} 
           axisLine={false} 
-          tickFormatter={(value) => `${currency}${value >= 1000 ? (value / 1000) + 'k' : value}`}
+          width={60}
+          tickFormatter={(value) => `${currency}${Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(value)}`}
         />
         <Tooltip 
           cursor={{ fill: '#ffffff05' }}
