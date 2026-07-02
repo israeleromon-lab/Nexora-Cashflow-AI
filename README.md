@@ -1,45 +1,65 @@
 # Nexora CashFlow AI
 
-## Overview
-Nexora CashFlow AI is a production-ready SaaS platform designed to help SMEs forecast revenue, expenses, and cash flow accurately.
-
-## Problem
-Over 90% of Nigerian businesses are SMEs and many fail due to poor financial planning and lack of clear cash flow visibility.
-
-## Why It Matters
-Helping these businesses survive and thrive directly impacts the local economy, creating jobs and fostering innovation.
-
-## Solution
-This platform uses predictive analytics and AI to improve business decision-making by providing clear, data-driven financial forecasts.
+A robust, full-stack financial dashboard tailored to help modern businesses track, forecast, and visualize their cash flow efficiently. Built from the ground up for speed, reliability, and powerful predictive analytics.
 
 ## Features
-- Cash Flow Forecasting
-- Revenue & Expense Tracking
-- AI-Powered Financial Advice (Powered by Gemini)
-- Chatbot Assistant (Powered by Groq)
-- Document Search & Embeddings (Powered by Cohere)
 
-## Architecture
-- **Frontend**: Next.js 15, TypeScript, TailwindCSS, Shadcn UI
-- **Backend/API**: Next.js API Routes (or separate Node.js service)
-- **Database**: PostgreSQL (via Supabase), Prisma ORM
-- **AI Engine**: Groq, Gemini, Cohere APIs
-
-## Documentation
-- [API Documentation](docs/api-documentation.md)
-- [Deployment Guide](docs/deployment-guide.md)
-
-## Screenshots
-![Dashboard](screenshots/dashboard.png)
-![AI Advisor](screenshots/ai_advisor.png)
+- **Interactive Dashboard:** Real-time metrics highlighting your Net Cash Flow, Revenue, and Expenses with beautiful, reactive charting.
+- **AI Financial Forecaster:** Analyzes your historical transaction data and intelligently projects your next 6 months of runway in Base, Upside, and Downside scenarios.
+- **Smart Transaction Tracking:** Log daily expenses and revenues cleanly.
+- **Multi-Currency Support:** Easily toggle between major currencies (Naira, USD, Euro, Pound, Yen) to adapt to your operational context.
+- **Supabase Authentication:** Secure, frictionless user authentication and session management.
 
 ## Tech Stack
-Next.js 15, TypeScript, TailwindCSS, Shadcn UI, Supabase, PostgreSQL, Prisma ORM, Groq, Gemini, Cohere, Recharts and Vercel.
 
-## Economic Impact
-By reducing the failure rate of Nigerian SMEs through better financial planning, this tool aims to stabilize local businesses and contribute to sustainable economic growth.
+- **Frontend:** Next.js 16 (App Router), React, Tailwind CSS, Recharts, Shadcn UI
+- **Backend:** Next.js API Routes (Serverless)
+- **Database:** PostgreSQL via Supabase
+- **AI Models:** OpenRouter API (Gemini 2.5 Flash, Groq, Cohere)
 
-## Future Improvements
-- Integration with local bank APIs (e.g., Mono, Okra)
-- Advanced scenario planning
-- Mobile Application
+---
+
+## Getting Started
+
+### Prerequisites
+Make sure you have [Node.js](https://nodejs.org/) installed on your machine. You will also need a free [Supabase](https://supabase.com) account and an [OpenRouter](https://openrouter.ai/) API key.
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/israeleromon-lab/Nexora-Cashflow-AI.git
+   cd Nexora-Cashflow-AI/frontend
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables:**
+   Rename `.env.example` to `.env.local` and add your keys:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+   SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+   OPENROUTER_API_KEY=your-openrouter-key
+   ```
+
+4. **Initialize the Database:**
+   Run the provided `database/schema.sql` script inside your Supabase SQL Editor to instantly scaffold your `profiles`, `transactions`, and `scenarios` tables.
+
+5. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000) in your browser to start visualizing your data.
+
+## Deployment
+
+Nexora CashFlow AI is optimized for zero-configuration deployment on **Vercel**. 
+Simply import your GitHub repository into your Vercel dashboard, attach your Environment Variables in the project settings, and click Deploy. 
+
+## License
+
+This project is licensed under the MIT License.
